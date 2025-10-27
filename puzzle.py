@@ -50,6 +50,19 @@ class World:
     def get_suspect_names(self):
         return list(self.suspects_attributes.keys())
 
+    @staticmethod
+    def generate_world(num_suspects: int):
+        suspect_names = random.sample(SUSPECT_NAME_DICTIONARY, k=num_suspects)
+        world = World(suspects_attributes={}, murderer_name=random.choice(suspect_names), suspect_names=suspect_names)
+
+        for sname in suspect_names:
+            attrs = {an: random.choice(ATTRIBUTE_DOMAIN_MAP[an]) for an in ATTRIBUTE_NAMES}
+            while attrs in world.suspects_attributes.values():
+                attrs = {an: random.choice(ATTRIBUTE_DOMAIN_MAP[an]) for an in ATTRIBUTE_NAMES}
+            world.suspects_attributes[sname] = attrs
+
+        return world
+
     def __repr__(self):
         return f'World(suspects={self.suspects_attributes}, murderer_name={self.murderer_name}, suspects_names={self.suspect_names})'
 
@@ -252,6 +265,17 @@ class Puzzle:
     def get_potential_worlds(self):
         return get_potential_worlds(self.world, self.clues)
 
+    def estimate_alpha_beta(self):
+        num_unary = sum(1 for clue in self.clues if
+                        isinstance(clue, (UnaryPositive, UnaryNegative, CrimePositive, CrimeNegative, TimeOrdering)))
+        num_indirect_positive = sum(1 for clue in self.clues if isinstance(clue, IndirectPositive))
+        num_indirect_negative = sum(1 for clue in self.clues if isinstance(clue, IndirectNegative))
+        total = len(self.clues)
+        alpha = num_unary / total if total > 0 else 0
+        beta = num_indirect_positive / (num_indirect_positive + num_indirect_negative) if (
+                                                                                                      num_indirect_positive + num_indirect_negative) > 0 else 0
+        return alpha, beta
+
     def __repr__(self):
         return f'Puzzle(world={self.world}, clues={self.clues})'
 
@@ -332,16 +356,10 @@ def get_clue_key(world: World, selected_clues: List[Clue], clue: Clue) -> tuple:
     return pw.num_potential_murderers(), pw.get_total_domain_size()
 
 
-def generate_puzzle(alpha: float, beta: float, max_clues: int, num_suspects: int = 5) -> Puzzle:
-    suspect_names = random.sample(SUSPECT_NAME_DICTIONARY, k=num_suspects)
-    world = World(suspects_attributes={}, murderer_name=random.choice(suspect_names), suspect_names=suspect_names)
+def generate_puzzle(alpha: float, beta: float, max_clues: int, num_suspects: int = 5, seed: str = None) -> Puzzle:
+    random.seed(seed)
 
-    for sname in suspect_names:
-        attrs = {an: random.choice(ATTRIBUTE_DOMAIN_MAP[an]) for an in ATTRIBUTE_NAMES}
-        while attrs in world.suspects_attributes.values():
-            attrs = {an: random.choice(ATTRIBUTE_DOMAIN_MAP[an]) for an in ATTRIBUTE_NAMES}
-        world.suspects_attributes[sname] = attrs
-
+    world = World.generate_world(num_suspects)
     all_clues = generate_clues(world)
     selected_clues: List[Clue] = []
 
@@ -367,3 +385,41 @@ def generate_puzzle(alpha: float, beta: float, max_clues: int, num_suspects: int
             break
 
     return Puzzle(world, selected_clues)
+
+
+def generate_puzzles_recursive_helper(world: World, current_clues: List[Clue], clues_remaining: int,
+                                      clues_domain: List[Clue], used_clues: List[Boolean]) -> List[List[Clue]]:
+    if clues_remaining == 0:
+        return [current_clues]
+
+    clue_paths = []
+
+    for i, clue in enumerate(clues_domain):
+        if used_clues[i]: continue
+        new_clues = current_clues + [clue]
+        pw = get_potential_worlds(world, new_clues)
+        if pw is None:
+            continue
+        used_clues[i] = True
+        clue_paths += generate_puzzles_recursive_helper(world, new_clues, clues_remaining - 1, clues_domain, used_clues)
+        used_clues[i] = False
+
+    return clue_paths
+
+
+def generate_puzzles_recursive(max_clues: int, num_suspects: int = 5, seed: str = None) -> List[Puzzle]:
+    random.seed(seed)
+
+    world = World.generate_world(num_suspects)
+    all_clues = generate_clues(world)
+
+    clue_paths = generate_puzzles_recursive_helper(
+        world=world,
+        current_clues=[],
+        clues_remaining=max_clues,
+        clues_domain=all_clues,
+        used_clues=[False] * len(all_clues)
+    )
+
+    puzzles = [Puzzle(world, clues) for clues in clue_paths]
+    return puzzles
