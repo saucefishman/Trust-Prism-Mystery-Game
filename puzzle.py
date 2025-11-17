@@ -2,6 +2,7 @@ import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Set, Tuple
+import json
 
 SUSPECT_NAME_DICTIONARY = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Hank', 'Ivy', 'Jack']
 
@@ -432,7 +433,10 @@ def get_potential_worlds(world: World, clues: List[Clue]) -> PotentialWorlds | N
             return None
     return pw
 
+
 _pw_cache = {}
+
+
 def cached_potential_worlds(world, clue_list):
     key = tuple(sorted((str(c) for c in clue_list)))
     if key in _pw_cache:
@@ -447,6 +451,7 @@ def get_clue_key(world: World, selected_clues: List[Clue], clue: Clue) -> tuple:
     if pw is None:
         return (-1,)
     return pw.num_potential_murderers(), pw.get_total_domain_size()
+
 
 def generate_puzzle(alpha: float, beta: float, max_clues: int, num_suspects: int = 5, seed: str = None) -> Puzzle:
     random.seed(seed)
@@ -471,13 +476,13 @@ def generate_puzzle(alpha: float, beta: float, max_clues: int, num_suspects: int
         selected_clues.append(best)
         all_clues.remove(best)
         pw = get_potential_worlds(world, selected_clues)
-        print(best, pw.num_potential_murderers())
         if pw and pw.num_potential_murderers() == 1:
             break
     return Puzzle(world, selected_clues)
 
 
-def generate_puzzles_recursive_helper(world: World, pw: PotentialWorlds, current_clues: List[Clue], clues_remaining: int, max_branches: int,
+def generate_puzzles_recursive_helper(world: World, pw: PotentialWorlds, current_clues: List[Clue],
+                                      clues_remaining: int, max_branches: int,
                                       clues_domain: List[Clue], used_clues: List[bool]) -> List[List[Clue]]:
     if clues_remaining == 0:
         return [current_clues]
@@ -505,7 +510,8 @@ def generate_puzzles_recursive_helper(world: World, pw: PotentialWorlds, current
     return clue_paths
 
 
-def generate_puzzles_recursive(max_clues: int, max_branches: int = 5, num_suspects: int = 5, seed: str = None) -> List[Puzzle]:
+def generate_puzzles_recursive(max_clues: int, max_branches: int = 5, num_suspects: int = 5, seed: str = None) -> List[
+    Puzzle]:
     random.seed(seed)
     world = World.generate_world(num_suspects)
     all_clues = generate_clues(world)

@@ -1,0 +1,101 @@
+{
+    "suspects": {
+        "Charlie": {
+            "Room": "Ballroom",
+            "Weapon": "Knife",
+            "Time": 17,
+            "Entry": "Window",
+            "Motive": "Illicit relationship with the victim"
+        },
+        "Hank": {
+            "Room": "Library",
+            "Weapon": "Knife",
+            "Time": 0,
+            "Entry": "Back door",
+            "Motive": "Owes money to the victim"
+        },
+        "Ivy": {
+            "Room": "Conservatory",
+            "Weapon": "Axe",
+            "Time": 8,
+            "Entry": "Window",
+            "Motive": "Illicit relationship with the victim"
+        },
+        "Eve": {
+            "Room": "Library",
+            "Weapon": "Knife",
+            "Time": 9,
+            "Entry": "Secret passage",
+            "Motive": "Was seen arguing with the victim"
+        },
+        "Bob": {
+            "Room": "Library",
+            "Weapon": "Axe",
+            "Time": 14,
+            "Entry": "Front door",
+            "Motive": "Illicit relationship with the victim"
+        }
+    },
+    "clues": [
+        {
+            "type": "IndirectPositive",
+            "repr": "IndirectPositive(attribute_name_1=Room, value_1=Ballroom, attribute_name_2=Weapon, value_2=Knife)",
+            "text": "The individual(s) who had Room of Ballroom, had Weapon of Knife"
+        },
+        {
+            "type": "IndirectPositive",
+            "repr": "IndirectPositive(attribute_name_1=Room, value_1=Conservatory, attribute_name_2=Weapon, value_2=Axe)",
+            "text": "The individual(s) who had Room of Conservatory, had Weapon of Axe"
+        },
+        {
+            "type": "UnaryNegative",
+            "repr": "UnaryNegative(suspect_name=Charlie, attribute_name=Weapon, value=Axe)",
+            "text": "Charlie does not have Weapon = Axe"
+        },
+        {
+            "type": "CrimePositive",
+            "repr": "CrimePositive(attribute_name=Time, value=21)",
+            "text": "The murder Time was 21"
+        },
+        {
+            "type": "UnaryPositive",
+            "repr": "UnaryPositive(suspect_name=Ivy, attribute_name=Room, value=Conservatory)",
+            "text": "Ivy has Room = Conservatory"
+        },
+        {
+            "type": "CrimePositive",
+            "repr": "CrimePositive(attribute_name=Room, value=Library)",
+            "text": "The murder Room was Library"
+        },
+        {
+            "type": "UnaryNegative",
+            "repr": "UnaryNegative(suspect_name=Charlie, attribute_name=Room, value=Library)",
+            "text": "Charlie does not have Room = Library"
+        },
+        {
+            "type": "UnaryNegative",
+            "repr": "UnaryNegative(suspect_name=Hank, attribute_name=Weapon, value=Axe)",
+            "text": "Hank does not have Weapon = Axe"
+        },
+        {
+            "type": "UnaryPositive",
+            "repr": "UnaryPositive(suspect_name=Charlie, attribute_name=Room, value=Ballroom)",
+            "text": "Charlie has Room = Ballroom"
+        },
+        {
+            "type": "IndirectPositive",
+            "repr": "IndirectPositive(attribute_name_1=Room, value_1=Ballroom, attribute_name_2=Time, value_2=17)",
+            "text": "The individual(s) who had Room of Ballroom, had Time of 17"
+        }
+    ],
+    "hidden_truth": {
+        "murderer_name": "Hank",
+        "crime_attributes": {
+            "Room": "Library",
+            "Weapon": "Knife",
+            "Time": 21,
+            "Entry": "Back door",
+            "Motive": "Owes money to the victim"
+        }
+    }
+}
